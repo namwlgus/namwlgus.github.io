@@ -278,7 +278,7 @@ body.pre .nav>*{opacity:0}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{transition:none!important;animation:none!important}
 }
-</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style>
+</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style><style>artifact-sync,artifact-local{display:contents}</style></head>
 <body class="pre">
@@ -381,7 +381,7 @@ body.pre .nav>*{opacity:0}
     <p class="edhint">바꾸고 저장하면 페이지가 새 버전으로 발행돼. 다음에 열어도 그대로야.</p>
     <div id="edForm"></div>
     <div class="ghrow" id="ghRow" hidden=""><p class="ghhint">깃허브 토큰을 한 번만 넣어줘. 이 기기에만 저장되고 페이지 파일에는 안 들어가.<br>깃허브 → Settings → Developer settings → Personal access tokens → Fine-grained tokens → 이 저장소에 Contents: Read and write</p><input type="password" id="ghTok" placeholder="토큰 붙여넣기" autocomplete="off" spellcheck="false"><button type="button" id="ghTokSave">저장</button><button type="button" id="ghTokDrop">지우기</button></div>
-    <div class="edActions"><p id="edStatus" role="status"></p><label class="edcheck xpro" id="xpROwrap" hidden=""><input type="checkbox" id="xpRO">보기 전용</label><label class="edcheck xpro" id="xpZipWrap" hidden=""><input type="checkbox" id="xpZip" checked="">사진 따로 (zip)</label><button type="button" id="ghBtn" hidden="">깃허브에 올리기</button><button type="button" id="exportBtn" hidden="">HTML 내보내기</button><button type="button" id="edCancel">취소</button><button type="button" id="edSave">저장하기</button></div>
+    <div class="edActions"><p id="edStatus" role="status"></p><label class="edcheck xpro" id="xpZipWrap" hidden=""><input type="checkbox" id="xpZip" checked="">사진 따로 (zip)</label><button type="button" id="ghBtn" hidden="">깃허브에 올리기</button><button type="button" id="exportBtn" hidden="">HTML 내보내기</button><button type="button" id="edCancel">취소</button><button type="button" id="edSave">저장하기</button></div>
   </div>
 </div>
 
@@ -425,7 +425,7 @@ const COPY = JSON.parse(COPY_RAW);
   if (!Array.isArray(c.about.facts)) c.about.facts = [];
   if (typeof c.about.pic !== 'string') c.about.pic = 'p:0';   /* 'p:<n>' a picture from the list, or an uploaded id, or '' */
   if (!c.assets || typeof c.assets !== 'object') c.assets = {};   /* id -> data: URI, filled in a saved local file */
-  c.readonly = !!c.readonly;   /* a view-only export shows no editor at all */
+  c.readonly = false;        /* the view-only option is gone; repair any copy stuck on it */   /* a view-only export shows no editor at all */
   if (!c.lock || typeof c.lock !== 'object' || !c.lock.hash) c.lock = null;   /* {salt, hash} guards the editor */
 })(COPY);
 const HOSTED = !!(window.claude && window.claude.use) && !COPY.local;   /* artifact page vs a saved local file */
@@ -1555,7 +1555,7 @@ if (xp) xp.onclick = async () => {
     if (zip) (src.prints || []).forEach(pp => (pp.links || []).forEach(rr => {
       if (rr.id && assets[rr.id] && !/^data:/.test(assets[rr.id])) rr.inline = false;
     }));
-    let html = buildHTML(src, assets, true, $('xpRO') && $('xpRO').checked);
+    let html = buildHTML(src, assets, true, false);
     if (!html) throw new Error('no source');
     edStatus.textContent = '파일 만드는 중…';
     const mb = b => (b / 1024 / 1024).toFixed(1) + 'MB';
@@ -1627,7 +1627,7 @@ if (ghBtn) ghBtn.onclick = async () => {
     (src.prints || []).forEach(pp => (pp.links || []).forEach(rr => {
       if (rr.id && assets[rr.id] && !/^data:/.test(assets[rr.id])) rr.inline = false;
     }));
-    const html = buildHTML(src, assets, true, !!COPY.readonly);
+    const html = buildHTML(src, assets, true, false);
     if (!html) throw new Error('no source');
     await ghPut(ghIndexPath(), new TextEncoder().encode(html), 'update page');
     ASSET_MAP = assets; COPY.assets = assets;            /* don't send the same pictures twice */
@@ -1650,7 +1650,7 @@ Promise.all([useCap('artifact'), useCap('assets'), useCap('downloads')]).then(([
   ASSETS = s; DL = d;
   /* `assets` resolves only for editors and up, so it tells us who may actually change this page */
   if (a && s && !COPY.readonly) { ART = a; $('editBtn').hidden = false; }
-  if (d) { ['exportBtn','xpROwrap','xpZipWrap'].forEach(k => { const e = $(k); if (e) e.hidden = false; }); }
+  if (d) { ['exportBtn','xpZipWrap'].forEach(k => { const e = $(k); if (e) e.hidden = false; }); }
 });
 </script>
 
